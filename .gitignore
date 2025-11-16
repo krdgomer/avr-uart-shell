@@ -1,0 +1,5 @@
+.vscode
+*.elf
+*.hex
+makefile
+project.txt
