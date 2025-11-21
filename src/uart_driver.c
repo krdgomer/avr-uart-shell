@@ -10,14 +10,13 @@ void USART_Init(unsigned int ubrr) {
 }
 
 void USART_Transmit(unsigned char data) {
-    while (!(UCSR0A & (1<<UDRE0)));  // Fixed: n → 0
-    UDR0 = data;  // Fixed: n → 0
+    while (!(UCSR0A & (1<<UDRE0)));  
+    UDR0 = data;  
 }
 
 unsigned char USART_Receive(void) {
-    while (!(UCSR0A & (1<<RXC0)));  // Fixed: n → 0
-    return UDR0;  // Fixed: n → 0
-}
+    while (!(UCSR0A & (1<<RXC0)));  
+    return UDR0;  
 
 void USART_Transmit_str(const char* str) {
     while (*str) {
@@ -26,5 +25,5 @@ void USART_Transmit_str(const char* str) {
 }
 
 int USART_DataAvailable(void) {
-    return (UCSR0A & (1 << RXC0));  // Check if data available
+    return (UCSR0A & (1 << RXC0));  
 }

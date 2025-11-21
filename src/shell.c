@@ -4,13 +4,11 @@
 #include <avr/io.h>
 #include "command.h"
 #include "commands/led.h"
+#include "commands/help.h"
 
-
-// Static makes these private to this file
 static char buffer[BUFFER_LENGTH];
 static uint8_t buffer_index = 0;
 static uint8_t line_ready = 0;
-
 
 static void display_prompt(void) {
     USART_Transmit('\r');
@@ -32,13 +30,14 @@ static void process_command(int argc, char **argv) {
             display_line(cmd->help);
         }
     } else {
-        display_line("Unknown command.");
+        display_line("Unknown command. Write \"help\" for command list.");
     }
 }
 
 void init_shell(void) {
     register_led_command();
-    DDRB |= (1 << DDB5);  // LED pin as output
+    register_help_command();
+    DDRB |= (1 << DDB5);  
     display_line("ATmega328P UART shell initialized.");
     display_prompt();
 }
@@ -73,7 +72,7 @@ void update_shell(void) {
             }
             
             if (argc > 0) {
-                process_command(argc, argv);  // Now with arguments!
+                process_command(argc, argv); 
             }
             
             display_prompt();

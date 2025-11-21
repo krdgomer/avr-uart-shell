@@ -3,8 +3,8 @@
 #include <string.h>
 
 #define MAX_COMMANDS 20
-static command_def_t command_table[MAX_COMMANDS];
-static int command_count = 0;
+command_def_t command_table[MAX_COMMANDS];
+int command_count = 0;
 
 void register_command(const command_def_t *command) {
     if (command_count < MAX_COMMANDS) {

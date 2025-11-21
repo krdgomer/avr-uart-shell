@@ -13,6 +13,9 @@ void register_command(const command_def_t *command);
 command_def_t *find_command(const char *name);
 void list_commands(void);
 
+extern command_def_t command_table[]; 
+extern int command_count;              
+
 // For internal use only
 typedef struct {
     const command_def_t *commands;
