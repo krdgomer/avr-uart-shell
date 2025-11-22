@@ -52,6 +52,14 @@ void update_shell(void) {
                 line_ready = 1;
             }
         }
+        else if (c == 8 || c == 127) {
+            if (buffer_index > 0) {
+                buffer_index--;
+                USART_Transmit('\b'); 
+                USART_Transmit(' ');       
+                USART_Transmit('\b'); 
+            }
+        }
         else if (buffer_index < (BUFFER_LENGTH - 1)) {
             buffer[buffer_index++] = c;
             USART_Transmit(c);

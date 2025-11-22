@@ -17,7 +17,7 @@ void USART_Transmit(unsigned char data) {
 unsigned char USART_Receive(void) {
     while (!(UCSR0A & (1<<RXC0)));  
     return UDR0;  
-
+}
 void USART_Transmit_str(const char* str) {
     while (*str) {
         USART_Transmit(*str++);
