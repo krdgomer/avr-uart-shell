@@ -12,7 +12,6 @@ static uint8_t buffer_index = 0;
 static uint8_t line_ready = 0;
 static char cmd_history[HISTORY_SIZE][25];
 static uint8_t history_index = 0;
-static uint8_t history_write_index = 0; //used for adding commands to history array
 static uint8_t history_count= 0;
 
 
@@ -148,7 +147,7 @@ void update_shell(void) {
             USART_Transmit('\r');
             USART_Transmit('\n');
             
-          )
+          
             if (history_count < HISTORY_SIZE) {
                 strncpy(cmd_history[history_count], buffer, sizeof(cmd_history[0]) - 1);
                 cmd_history[history_count][sizeof(cmd_history[0]) - 1] = '\0';
