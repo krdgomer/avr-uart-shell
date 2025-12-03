@@ -6,6 +6,7 @@
 #include "commands/led.h"
 #include "commands/help.h"
 #include <stdio.h>
+#include "input.h"
 
 static char buffer[BUFFER_LENGTH];
 static uint8_t buffer_index = 0;
@@ -119,29 +120,7 @@ void update_shell(void) {
         prev1 = prev2;
         prev2 = c;
         
-        //Enter pressed
-        if (c == '\r' || c == '\n') {
-            if (buffer_index > 0) {
-                buffer[buffer_index] = '\0'; 
-                line_ready = 1;
-            }
-        }
-
-        //Backspace pressed
-        else if (c == 8 || c == 127) {
-            if (buffer_index > 0) {
-                buffer_index--;
-                USART_Transmit('\b'); 
-                USART_Transmit(' ');       
-                USART_Transmit('\b'); 
-            }
-        }
-
-        //Normal key pressed
-        else if (buffer_index < (BUFFER_LENGTH - 1)) {
-            buffer[buffer_index++] = c;
-            USART_Transmit(c);
-        }
+        handle_key_pressed(c, &buffer_index, buffer, &line_ready);
         
         if (line_ready) {
             USART_Transmit('\r');

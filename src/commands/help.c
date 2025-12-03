@@ -17,7 +17,7 @@ static void execute(int argc, char **argv) {
             snprintf(line, sizeof(line), "  %s\r\n", command_table[i].name);
             display_line(line);
         }
-        display_line("Use 'help <command>' for more info\r\n");
+        display_line("Use 'help <command>' for more info");
     }
     else if (argc == 2) {
         command_def_t *cmd = find_command(argv[1]);
