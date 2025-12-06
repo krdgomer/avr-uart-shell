@@ -7,9 +7,9 @@ int main(void) {
 
     USART_Init(MYUBRR);
     _delay_ms(100);
-    init_shell();
+    shell_init();
     
     while(1) {
-       update_shell();
+       shell_poll();
     }
 }

@@ -7,24 +7,17 @@
 #include "commands/help.h"
 #include <stdio.h>
 #include "input.h"
+#include "history.h"
+#include "display.h"
 
 static char buffer[BUFFER_LENGTH];
 static uint8_t buffer_index = 0;
 static uint8_t line_ready = 0;
-static char cmd_history[HISTORY_SIZE][25];
-static uint8_t history_index = 0;
-static uint8_t history_count= 0;
 
 
-static void display_prompt(void) {
-    USART_Transmit('\r');
-    USART_Transmit('\n');
-    USART_Transmit('>');
-}
-
-void display_line(const char* str) {
-    USART_Transmit_str(str);
-}
+/* ============================================================================
+ * COMMAND PROCESSING
+ * ========================================================================== */
 
 static void process_command(int argc, char **argv) {
     command_def_t *cmd = find_command(argv[0]);
@@ -41,107 +34,74 @@ static void process_command(int argc, char **argv) {
 }
 
 
+/* ============================================================================
+ * ARROW KEY HANDLERS
+ * ========================================================================== */
 
-void init_shell(void) {
+static void handle_up_arrow(void) {
+    history_navigate_up(buffer, &buffer_index);
+    display_history_command(buffer);
+}
+
+static void handle_down_arrow(void) {
+    history_navigate_down(buffer, &buffer_index);
+    display_history_command(buffer);
+}
+
+
+/* ============================================================================
+ * INITIALIZATION
+ * ========================================================================== */
+
+void shell_init(void) {
     register_led_command();
     register_help_command();
-    DDRB |= (1 << DDB5);  
+    history_init();
+    DDRB |= (1 << DDB5);  // For built-in Arduino LED
     display_line("ATmega328P UART shell initialized.");
     display_prompt();
 }
 
-static void clear_line(void) {
-    // ANSI escape sequence: ESC [2K = clear entire line
-    USART_Transmit(0x1B);  // ESC
-    USART_Transmit('[');
-    USART_Transmit('2');
-    USART_Transmit('K');
-    
-    // Move cursor to beginning of line
-    USART_Transmit('\r');
-}
 
-static void handle_up_arrow(void) {
-    if (history_count == 0) return;  
-    
-    if (history_index < history_count - 1) {
-        history_index++;
-    } else {
-        // Loop back to the beginning (oldest command)
-        history_index = 0;
-    }
-    
-    clear_line();
-    USART_Transmit('>');
-    USART_Transmit_str(cmd_history[history_index]);
-    
-    strcpy(buffer, cmd_history[history_index]);
-    buffer_index = strlen(cmd_history[history_index]);
-}
+/* ============================================================================
+ * MAIN POLLING LOOP
+ * ========================================================================== */
 
-static void handle_down_arrow(void) {
-    if (history_count == 0) return;
-    
-    if (history_index > 0) {
-        history_index--;
-    } else {
-        // Loop back to the end (newest command)
-        history_index = history_count - 1;
-    }
-    
-    clear_line();
-    USART_Transmit('>');
-    USART_Transmit_str(cmd_history[history_index]);
-    
-    strcpy(buffer, cmd_history[history_index]);
-    buffer_index = strlen(cmd_history[history_index]);
-}
-
-void update_shell(void) {
+void shell_poll(void) {
     if (USART_DataAvailable()) {  
         char c = USART_Receive();
         static char prev1 = 0, prev2 = 0;
         
-        // Check for arrow keys first
+        // Check for arrow keys (ESC [ A/B sequences)
         if (prev1 == 0x1B && prev2 == '[') {
             if (c == 'A') {
                 handle_up_arrow();
                 prev1 = prev2 = 0;
-                return;  // Skip normal processing
+                return;
             }
             else if (c == 'B') {
                 handle_down_arrow();
                 prev1 = prev2 = 0;
-                return;  // Skip normal processing
+                return;
             }
         }
         
-        // Update the detection buffer
+        // Update escape sequence detection buffer
         prev1 = prev2;
         prev2 = c;
         
+        // Handle regular key input
         handle_key_pressed(c, &buffer_index, buffer, &line_ready);
         
         if (line_ready) {
             USART_Transmit('\r');
             USART_Transmit('\n');
             
-          
-            if (history_count < HISTORY_SIZE) {
-                strncpy(cmd_history[history_count], buffer, sizeof(cmd_history[0]) - 1);
-                cmd_history[history_count][sizeof(cmd_history[0]) - 1] = '\0';
-                history_count++;
-            } else {
-                for (int i = 0; i < HISTORY_SIZE - 1; i++) {
-                    strcpy(cmd_history[i], cmd_history[i + 1]);
-                }
-                strncpy(cmd_history[HISTORY_SIZE - 1], buffer, sizeof(cmd_history[0]) - 1);
-                cmd_history[HISTORY_SIZE - 1][sizeof(cmd_history[0]) - 1] = '\0';
-            }
+            // Store command in history
+            history_add(buffer);
+            history_reset_index();
             
-            history_index = history_count;  
-
-            
+            // Parse command into argc/argv
             char *argv[10];
             int argc = 0;
             
@@ -151,6 +111,7 @@ void update_shell(void) {
                 token = strtok(NULL, " ");
             }
             
+            // Execute command
             if (argc > 0) {
                 process_command(argc, argv); 
             }

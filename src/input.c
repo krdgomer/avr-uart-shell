@@ -25,3 +25,4 @@ void handle_key_pressed(char key, uint8_t *buffer_index, char *buffer, uint8_t *
         USART_Transmit(key);
     }
 }
+
