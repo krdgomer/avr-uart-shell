@@ -3,6 +3,8 @@
 #include <util/delay.h>
 #include "shell.h"
 
+// Example usage of shell
+
 int main(void) {  
 
     USART_Init(MYUBRR);
