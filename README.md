@@ -4,7 +4,7 @@ A lightweight, embeddable command-line interface (CLI) for AVR microcontrollers.
 
 ## Adding Custom Commands
 
-To add your own custom commands follow the instructions inside the template.c file. Once you finish implementing your command register it inside shell*init() function using register*(your_command_name)\_command().
+To add your own custom commands follow the instructions inside the template.c file. Once you finish implementing your command register it inside shell_init() function using register_(your_command_name)_command().
 
 ## Demo
 
